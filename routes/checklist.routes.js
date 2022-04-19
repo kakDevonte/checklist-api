@@ -18,27 +18,19 @@ router.post('/', async (req, res) => {
     }
 })
 router.get('/', async (req, res) => {
-
     const checklists = await Checklist.find()
-
     res.json({resultCode: 0, data: {checklists}})
-
 })
 
 router.post('/department', async (req, res) => {
-
     const {department} = req.body
-
     const checklists = await Checklist.find({'department': department})
-
     res.json({resultCode: 0, data: {checklists}})
-
 })
 
 router.get('/head', async (req, res) => {
     const checklists = await Checklist.find({'completed': true})
-    res.json({checklists: checklists})
-
+    res.json({resultCode: 0, data: {checklists}})
 })
 
 router.put('/', async (req, res) => {

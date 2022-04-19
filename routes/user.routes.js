@@ -14,10 +14,7 @@ const router = Router()
 
 router.post('/', async (req, res) => {
     try {
-        console.log(req.body)
-
         const {email, firstName, lastName, password, role, department} = req.body.user
-
         const candidate = await User.findOne({email})
 
         if (candidate) {
