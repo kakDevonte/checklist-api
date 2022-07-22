@@ -20,6 +20,7 @@ app.use(express.json({ extended: true }))
 app.use('/api/auth', require('./routes/auth.routes'))
 app.use('/api/checklist', require('./routes/checklist.routes'))
 app.use('/api/users', require('./routes/user.routes'))
+app.use('/api/', require('./routes/hospital.routes'))
 
 const PORT = config.get('port') || 5000
 

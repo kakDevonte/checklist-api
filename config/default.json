@@ -1,7 +1,7 @@
 {
   "port": 5000,
   "jwtSecret": "alexandr mongo",
-  "mongoUri": "mongodb://localhost:27017/checklistDB",
+  "mongoUri": "mongodb://localhost:27017/hospitalDB",
   "emailUser": "examplediplom@gmail.com",
   "emailPass": "examplediplom123",
   "email": "examplediplom@gmail.com"

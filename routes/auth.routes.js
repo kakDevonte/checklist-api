@@ -37,7 +37,7 @@ router.post('/login',
             res.status(200).json({ resultCode: 0 })
 
         } catch (e) {
-            res.json({ resultCode: 1, message: 'Что-то пошло не так, попробуйте снова'})
+            res.status(501).json({ resultCode: 1, message: 'Что-то пошло не так, попробуйте снова'})
         }
 })
 //
@@ -46,16 +46,16 @@ router.get('/', async (req, res) => {
     const token = await Token.findOne({ token: req.cookies['token'] })
 
     if (!token) {
-        return res.json({ resultCode: 1})
+        return res.status(500).json({ resultCode: 1 });
     }
     const user = await User.findOne({'_id': token.userId})
     if (!user) {
         return res.json({ resultCode: 1})
     }
     if (user.department)
-        res.json({ resultCode: 0, data: {auth: true, role: user.role, department: user.department} })
+        res.json({ isAuth: true, role: user.role, department: user.department, name: `${user.firstName} ${user.lastName}`})
     else
-        res.json({ resultCode: 0, data: {auth: true, role: user.role, department: null} })
+        res.json({ resultCode: 0, data: {isAuth: true, role: user.role, department: '', name: `${user.firstName} ${user.lastName}`} })
 })
 
 router.delete('/', async (req, res) => {

@@ -1,12 +1,9 @@
 const {Router} = require('express')
 const User = require('../models/User')
-const Token = require('../models/Token')
 const bcrypt = require("bcryptjs");
-const Checklist = require('../models/Checklist')
 const nodemailer = require('nodemailer')
 const config = require('config')
 const {isEmpty} = require('validator')
-const {check, validationResult} = require("express-validator");
 const router = Router()
 
 
@@ -14,12 +11,12 @@ const router = Router()
 
 router.post('/', async (req, res) => {
     try {
-        const {email, firstName, lastName, password, role, department} = req.body.user
-        const candidate = await User.findOne({email})
-
-        if (candidate) {
-            return res.status(400).json({message: 'Такой пользователь уже существует'})
-        }
+        const {email, firstName, lastName, password, role, department} = req.body
+        // const candidate = await User.findOne({email, firstName, lastName})
+        //
+        // if (candidate) {
+        //     return res.status(400).json({message: 'Такой пользователь уже существует'})
+        // }
 
         const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -30,7 +27,7 @@ router.post('/', async (req, res) => {
         res.status(201).json({ resultCode: 0 })
 
     } catch (e) {
-        res.status(500).json({ resultCode: 1 })
+        res.status(500).json({ resultCode: 1, message: e.message})
     }
 })
 
@@ -39,7 +36,7 @@ router.get('/', async (req, res) => {
 
     try {
         const users = await User.find()
-        res.json({ resultCode: 0, data: users })
+        res.json(users)
     } catch (error) {
         res.status(500).json({ resultCode: 1 })
     }
@@ -51,24 +48,24 @@ router.get('/:id', async (req, res) => {
 
     const user = await User.findOne({ '_id': id })
 
-    res.status(201).json({ resultCode: 0, user })
+    res.status(201).json(user)
 })
 
 router.put('/', async (req, res) => {
 
     try {
-        const {email, firstName, lastName, password, role, department} = req.body.user
+        const {email, firstName, lastName, password, role, department} = req.body
         if (isEmpty(password)) {
             const user = {email, firstName, lastName, role, department}
-            await User.updateOne({'_id': req.body.user._id}, user)
+            await User.updateOne({'_id': req.body._id}, user)
         } else {
             const hashedPassword = await bcrypt.hash(password, 12)
             const user = {email, firstName, lastName, password: hashedPassword, role, department}
-            await User.updateOne({'_id': req.body.user._id}, user)
+            await User.updateOne({'_id': req.body._id}, user)
         }
         res.status(201).json({resultCode: 0})
     } catch (error) {
-        res.status(500).json({ resultCode: 1 })
+        res.status(500).json({ resultCode: error.message })
     }
 })
 
