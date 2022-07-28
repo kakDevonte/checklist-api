@@ -4,9 +4,38 @@ const router = Router()
 
 
 router.post('/get', async (req, res) => {
-    const {date, department} = req.body
-    const hospitalization = await Hospitalization.find({'department': department, 'date': date})
-    res.json({resultCode: 0, hospitalization })
+    const {firstDate, secondDate, department} = req.body
+
+    let now = new Date(secondDate);
+    let hospitalArray = []
+    if(secondDate.length > 0) {
+        for (let d = new Date(firstDate); d <= now; d.setDate(d.getDate() + 1)) {
+            const hospitalization = await Hospitalization.findOne({
+                'department': department,
+                'date': d.toLocaleDateString('en-CA')
+            })
+            if(hospitalization) {
+                hospitalization.patients = hospitalization.patients.sort(function (x, y) {
+                    return (x.isDelete === y.isDelete)? 0 : x.isDelete ? 1 : -1;
+                })
+                hospitalArray.push(hospitalization)
+            }
+        }
+    }
+    else {
+        const hospitalization = await Hospitalization.findOne({
+            'department': department,
+            'date': firstDate
+        })
+        if(hospitalization) {
+            hospitalization.patients = hospitalization.patients.sort(function (x, y) {
+                return (x.isDelete === y.isDelete) ? 0 : x.isDelete ? 1 : -1;
+            })
+            hospitalArray.push(hospitalization)
+        }
+    }
+
+    res.status(201).json(hospitalArray)
 })
 
 router.post('/getall', async (req, res) => {
@@ -17,7 +46,18 @@ router.post('/getall', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const {date, department, patient} = req.body.data
+        const {date, department } = req.body
+
+        const patient = {
+            id: req.body.id,
+            name: req.body.name,
+            content: req.body.content,
+            direction: req.body.direction,
+            comment: req.body.comment,
+            declarer: req.body.declarer,
+            isPermit: req.body.isPermit,
+            isDelete: req.body.isDelete
+        }
 
         const object = await Hospitalization.findOne({'department': department, 'date': date})
         if(object === null){
@@ -29,20 +69,49 @@ router.post('/', async (req, res) => {
         }
         res.status(201).json({resultCode: 0})
     } catch (e) {
-        res.status(500).json({resultCode: 1, message: e.message})
+        res.status(500).json({message: e.message})
     }
 })
 
 router.put('/', async (req, res) => {
-    const {date, department, patients} = req.body.data
+    const {date, department} = req.body
+
+    console.log(req.body)
+
+    const patient = {
+        id: req.body.id,
+        name: req.body.name,
+        content: req.body.content,
+        direction: req.body.direction,
+        comment: req.body.comment,
+        declarer: req.body.declarer,
+        isPermit: req.body.isPermit,
+        isDelete: req.body.isDelete
+    }
+
     const object = await Hospitalization.findOne({'department': department, 'date': date})
 
-    const newHospital = {
-        date,
-        department,
-        patients
-    }
-    await Hospitalization.updateOne({'_id': object._id}, newHospital)
+    object.patients = object.patients.map(item => item.id === req.body.id ? patient : item)
+
+    await object.save();
+
+    res.status(201).json({resultCode: 0})
+})
+
+router.put('/delete', async (req, res) => {
+    const {date, department, id, isDelete} = req.body
+
+    const object = await Hospitalization.findOne({'department': department, 'date': date})
+
+    const newObjectPatients = object.patients.map((item) => (
+        item.id === id
+            ? { ...item, isDelete: isDelete }
+            : item
+    ));
+
+    object.patients = newObjectPatients
+
+    await object.save();
 
     res.status(201).json({resultCode: 0})
 })
